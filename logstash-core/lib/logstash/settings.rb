@@ -179,12 +179,15 @@ module LogStash
     ### Specific settings #####
 
     class Boolean < Setting
-      def initialize(name, default)
+      def initialize(name, default, strict=true, &validator_proc)
         @name = name
         @klass = Object
         @value = nil
         @value_is_set = false
-        @default = coerce(default)
+        @validator_proc = validator_proc
+        coerced_default = coerce(default)
+        validate(coerced_default)
+        @default = coerced_default
       end
 
       def coerce(value)
@@ -199,7 +202,9 @@ module LogStash
       end
 
       def set(value)
-        @value = coerce(value)
+        coerced_value = coerce(value)
+        validate(coerced_value)
+        @value = coerce(coerced_value)
         @value_is_set = true
         @value
       end
